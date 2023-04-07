@@ -4,6 +4,7 @@
 #include <USART.h>
 #include <LCD.h>
 #include <BUTTONS.h>
+#include <LED.h>
 #include <math.h>
 #include <time.h>
 
@@ -24,6 +25,8 @@ int main()
   #ifdef __DEBUG__
     dbg_start();
   #endif
+
+
 
   USART_init();
   LCD_init();
