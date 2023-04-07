@@ -19,14 +19,13 @@ void LCD_init(void)
 	LCD_command(0x06); // move cursor right
 	LCD_command(0x01); // clear screen, move cursor to home
 	LCD_command(0x0C); // turn on display, cursor off
-	LCD_command(0x80);
 }
 
 // Initialize ports to output mode
 void PORTS_init(void)
 {
-	DDRB |= (1 << RS) | (1 << EN); // set pin output mode
-	PORTB &= ~(1 << EN);		   // turn off EN
+	DDRD |= (1 << RS) | (1 << EN); // set pin output mode
+	PORTD &= ~(1 << EN);		   // turn off EN
 
 	// PC0-PC3 for LCD D4-D7, respectively.
 	DDRC |= 0x0F; // set pin output mode
@@ -41,16 +40,16 @@ void LCD_nibble_write(uint8_t data, uint8_t control)
 	// set R/S bit
 	if (control & RS)
 	{
-		PORTB |= (1 << RS);
+		PORTD |= (1 << RS);
 	}
 	else
 	{
-		PORTB &= ~(1 << RS);
+		PORTD &= ~(1 << RS);
 	}
 
 	// pulse E
-	PORTB |= (1 << EN);	 // pulse E high
-	PORTB &= ~(1 << EN); // clear E
+	PORTD |= (1 << EN);	 // pulse E high
+	PORTD &= ~(1 << EN); // clear E
 }
 
 void LCD_command(uint8_t command)
