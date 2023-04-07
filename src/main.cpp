@@ -3,9 +3,21 @@
 #include <PINS.h>
 #include <USART.h>
 #include <LCD.h>
+#include <BUTTONS.h>
+#include <math.h>
+#include <time.h>
 
-void get_names(char* player1, char* player2);
-void LCD_send_names(char*player1, char* player2);
+
+void get_names();
+void LCD_send_names();
+void game_loop();
+
+char player1[MAX_TEXT];
+char player2[MAX_TEXT];
+
+byte* p1_score;
+byte* p2_score;
+
 
 int main()
 {
@@ -13,16 +25,18 @@ int main()
     dbg_start();
   #endif
 
-  USART_init;
-  LCD_init;
+  USART_init();
+  LCD_init();
+  button_init();
 
-  char player1[MAX_TEXT];
-  char player2[MAX_TEXT];
-
-  get_names(player1, player2);
-
+  *p1_score = 0;
+  *p2_score = 0;
 
 
+  get_names();
+  LCD_send_names();
+
+  game_loop();
 
 }
 
@@ -78,4 +92,34 @@ void LCD_send_names(char*player1, char* player2)
   LCD_command(0xC0);
   LCD_string(temp);
 
+}
+
+void game_loop()
+{
+  srand(time(NULL));
+
+  uint16_t randTime = (rand()%4500)+500;
+
+  delayMs(randTime);
+
+  sei();
+
+  //update 7-segments
+
+}
+
+ISR(INT0_vect)
+{
+  cli();
+  (*p1_score)++;
+
+  //light up p1_led
+}
+
+ISR(INT1_vect)
+{
+  cli();
+  (*p2_score)++;
+
+  //light up p2_led
 }
