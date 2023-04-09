@@ -26,7 +26,7 @@
 
 //Player 1 + 2 button
 #define P1_BUTTON   PD2//(int0)
-#define P2_button   PD3//(int1)
+#define P2_BUTTON   PD3//(int1)
 
 //LCD EN - RS
 #define EN  PD4
@@ -34,4 +34,4 @@
 
 //Player 1 + 2 LED
 #define P1_LED   PD6
-#define P2_LED1  PD7
+#define P2_LED   PD7

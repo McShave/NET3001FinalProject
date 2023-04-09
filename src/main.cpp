@@ -26,11 +26,18 @@ int main()
     dbg_start();
   #endif
 
+  DDRB = 0x00;
+  DDRC = 0x00;
+  DDRD = 0x00;
 
+  PORTB = 0x00;
+  PORTC = 0x00;
+  PORTD = 0x00;
 
   USART_init();
   LCD_init();
   button_init();
+  LED_init();
 
   *p1_score = 0;
   *p2_score = 0;
@@ -45,7 +52,7 @@ int main()
 
 
 
-void get_names(char* player1, char* player2)
+void get_names()
 {
   char temp[MAX_TEXT];
 
@@ -55,33 +62,35 @@ void get_names(char* player1, char* player2)
 
   USART_get_string(player1);
 
-  if (strlen(player1) > 13)
+  if (strlen(player1) > 12)
   {
     strcpy(temp, player1);
-    for (int i = 0; i < 13; i++)
+    for (int i = 0; i < 12; i++)
     {
       player1[i] = temp[i];
     }
-    player1[13] = '\0';
+    player1[12] = '\0';
   }
 
   strcpy(temp, "\n Enter name of player 2: ");
 
+  USART_send_string(temp);
+
   USART_get_string(player2);
 
-  if (strlen(player2) > 13)
+  if (strlen(player2) > 12)
   {
     strcpy(temp, player2);
-    for (int i = 0; i < 13; i++)
+    for (int i = 0; i < 12; i++)
     {
       player2[i] = temp[i];
     }
-    player2[13] = '\0';
+    player2[12] = '\0';
   }
 }
 
 
-void LCD_send_names(char*player1, char* player2)
+void LCD_send_names()
 {
   char temp[MAX_TEXT];
 
@@ -105,8 +114,11 @@ void game_loop()
 
   delayMs(randTime);
 
+  PORTC |= (1 << BUZZER);
   sei();
-
+  delayMs(500);
+  PORTC &= ~(1 << BUZZER);
+ 
   //update 7-segments
 
 }
@@ -116,7 +128,9 @@ ISR(INT0_vect)
   cli();
   (*p1_score)++;
 
-  //light up p1_led
+  PORTD |= (1 << P1_LED);
+  delayMs(2000);
+  PORTD &= ~(1 << P1_LED);
 }
 
 ISR(INT1_vect)
@@ -124,5 +138,7 @@ ISR(INT1_vect)
   cli();
   (*p2_score)++;
 
-  //light up p2_led
+  PORTD |= (1 << P2_LED);
+  delayMs(2000);
+  PORTD &= ~(1 << P2_LED);
 }
