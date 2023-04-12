@@ -5,6 +5,8 @@
 #include <LCD.h>
 #include <BUTTONS.h>
 #include <LED.h>
+#include <ShiftReg.h>
+#include <Segment.h>
 #include <math.h>
 #include <time.h>
 
@@ -12,12 +14,20 @@
 void get_names();
 void LCD_send_names();
 void game_loop();
+void p1_has_scored();
+void p2_has_scored();
+void LCD_player_scored(byte pNum);
 
 char player1[MAX_TEXT];
 char player2[MAX_TEXT];
 
-byte* p1_score;
-byte* p2_score;
+volatile uint8_t p1_score;
+volatile uint8_t p2_score;
+
+volatile boolean p1_scored;
+volatile boolean p2_scored;
+
+byte digits[ARRAY_SIZE_DECIMAL] = {0xFC, 0x60, 0xDA, 0xF2, 0x66, 0xB6, 0xBE, 0xE0, 0xFE, 0xF6 }; 
 
 
 int main()
@@ -39,15 +49,22 @@ int main()
   button_init();
   LED_init();
 
-  *p1_score = 0;
-  *p2_score = 0;
+  p1_score = 0;
+  p2_score = 0;
+  p1_scored = false;
+  p2_scored = false;
 
 
   get_names();
   LCD_send_names();
 
-  game_loop();
+  displayValueP1(digits[p1_score]);
+  displayValueP2(digits[p2_score]);
 
+  while(1)
+  {
+    game_loop();
+  }
 }
 
 
@@ -108,17 +125,31 @@ void LCD_send_names()
 
 void game_loop()
 {
+
   srand(time(NULL));
 
   uint16_t randTime = (rand()%4500)+500;
 
   delayMs(randTime);
 
-  PORTC |= (1 << BUZZER);
+  PORTD |= (1 << P1_LED) | (1 << P2_LED);
   sei();
-  delayMs(500);
-  PORTC &= ~(1 << BUZZER);
  
+  while(1)
+  {
+    if (p1_scored == true)
+    {
+      p1_scored = false;
+      p1_has_scored();
+      break;
+    }
+    if (p2_scored == true)
+    {
+      p2_scored = false;
+      p2_has_scored();
+      break;
+    }
+  }
   //update 7-segments
 
 }
@@ -126,19 +157,67 @@ void game_loop()
 ISR(INT0_vect)
 {
   cli();
-  (*p1_score)++;
-
-  PORTD |= (1 << P1_LED);
-  delayMs(2000);
-  PORTD &= ~(1 << P1_LED);
+  p1_score++;
+  p1_scored = true;
 }
 
 ISR(INT1_vect)
 {
   cli();
-  (*p2_score)++;
+  p2_score++;
+  p2_scored = true;
+}
 
-  PORTD |= (1 << P2_LED);
-  delayMs(2000);
+void p1_has_scored()
+{
   PORTD &= ~(1 << P2_LED);
+  delayMs(250);
+  for (int i = 0; i < 3; i++)
+  {
+    PORTD &= ~(1 << P1_LED);
+    delayMs(250);
+    PORTD |= (1 << P1_LED);
+    delayMs(250);
+  }
+  PORTD &= ~(1 << P1_LED);
+  displayValueP1(digits[p1_score]);
+  LCD_player_scored(10);
+}
+
+void p2_has_scored()
+{
+  PORTD &= ~(1 << P1_LED);
+  delayMs(250);
+  for (int i = 0; i < 3; i++)
+  {
+    PORTD &= ~(1 << P2_LED);
+    delayMs(250);
+    PORTD |= (1 << P2_LED);
+    delayMs(250);
+  }
+  PORTD &= ~(1 << P2_LED);
+  displayValueP2(digits[p2_score]);
+  LCD_player_scored(20);
+}
+
+void LCD_player_scored(byte pNum)
+{
+  char text1[MAX_TEXT];
+  char text2[MAX_TEXT] = "has scored!";
+  if (pNum == 10) { strcpy(text1, player1); }
+  if (pNum == 20) { strcpy(text1, player2); }
+
+  LCD_command(0x01);
+  LCD_command(0x80);
+  LCD_string(text1);
+  LCD_command(0xC0);
+  LCD_string(text2);
+  for (int i = 0; i < 16; i++)
+  {
+    LCD_command(0x1C);
+    delayMs(250);
+  }
+  LCD_command(0x01);
+  LCD_send_names();
+
 }
