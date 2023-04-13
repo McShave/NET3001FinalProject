@@ -48,18 +48,20 @@ int main()
   LCD_init();
   button_init();
   LED_init();
+  init_shift(P1_DATA, P1_CLOCK, P1_LATCH);
+  init_shift(P2_DATA, P2_CLOCK, P2_LATCH);
 
   p1_score = 0;
   p2_score = 0;
   p1_scored = false;
   p2_scored = false;
 
+  displayValueP1(digits[p1_score]);
+  displayValueP2(digits[p2_score]);
 
   get_names();
   LCD_send_names();
 
-  displayValueP1(digits[p1_score]);
-  displayValueP2(digits[p2_score]);
 
   while(1)
   {

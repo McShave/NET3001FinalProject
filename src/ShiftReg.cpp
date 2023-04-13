@@ -3,6 +3,7 @@
 void init_shift(byte dataPin, byte clockPin, byte latchPin)
 {
     DDRB |= (1<<dataPin) | (1<<latchPin) | (1<<clockPin); // Port D PIN4,5, and 6 set to ouput 
+
 }
 
 
